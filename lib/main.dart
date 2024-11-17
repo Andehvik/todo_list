@@ -41,6 +41,8 @@ class MyApp extends StatelessWidget {
 }
 
 class MyTodoApp extends StatelessWidget {
+  const MyTodoApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(

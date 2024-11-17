@@ -2,7 +2,7 @@
 class Task {
   final String id;
   final String title;
-  final bool isDone;
+  bool isDone;
 
   Task({
   required this.id,
