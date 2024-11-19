@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:provider/single_child_widget.dart';
 import 'package:todo_list/providers/task_provider.dart';
 import 'package:todo_list/screens/add_task_screen.dart';
-import 'package:todo_list/screens/home_screen.dart';
+import 'package:todo_list/screens/list_screen.dart';
 
 void main() {
   runApp(MyTodoApp());
@@ -54,7 +55,7 @@ class MyTodoApp extends StatelessWidget {
         ),
         initialRoute: '/',
         routes: {
-          '/': (ctx) => HomeScreen(),
+          '/': (ctx) => ListScreen(),
           '/add-task': (ctx) => AddTaskScreen(),
           // Add more routes if needed
         },
