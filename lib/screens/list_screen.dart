@@ -14,6 +14,7 @@ class _ListScreenState extends State<ListScreen> {
   List<TaskProvider> taskLists = [TaskProvider()]; // Start with one list
   int currentTabIndex = 0;
   int counter = 0;
+  var task = TaskProvider();
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +32,7 @@ class _ListScreenState extends State<ListScreen> {
             },
             tabs: List.generate(taskLists.length, (index) {
               return Tab(
-                text: 'List ${index + 1}', // Tab names: List 1, List 2, etc.
+                text: taskLists[index].categoryName, // Tab names: List 1, List 2, etc.
               );
             }),
           ),
@@ -97,7 +98,9 @@ class _ListScreenState extends State<ListScreen> {
             onPressed: () {
               if (categoryController.text.isNotEmpty) {
                 setState(() {
-                  taskLists.add(TaskProvider());
+
+                  task.categoryName = categoryController.text;
+                  taskLists.add(task);
                 });
                 Navigator.of(ctx).pop();
               }
