@@ -14,13 +14,27 @@ class TaskProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void deleteTask(Task task) {
+    _tasks.remove(task);
+    notifyListeners();
+  }
+
   void toggleTaskCompletion(int index) {
-   tasks[index].isDone = !tasks[index].isDone;
+   _tasks[index].isDone = !_tasks[index].isDone;
    notifyListeners();
   }
-  String setName(String categoryName) {
-    return this.categoryName = categoryName;
+  String setCategoryName(String categoryName) {
+    this.categoryName = categoryName;
+    notifyListeners();
+    return this.categoryName;
   }
+  void updateTask(int index, Task updatedTask) {
+    if (index >= 0 && index < _tasks.length) {
+      _tasks[index] = updatedTask;
+      notifyListeners();
+    }
+  }
+
 
 // Implement methods to update and delete tasks
 
