@@ -29,29 +29,59 @@ class _ListScreenState extends State<ListScreen> {
         appBar: AppBar(
           title: const Text('Todo Lists'),
           backgroundColor: Colors.greenAccent,
-          bottom: TabBar(
-            onTap: (index) {
-              setState(() {
-                currentTabIndex = index;
-              });
-            },
-            tabs: List.generate(taskLists.length, (index) {
-              return GestureDetector(
-                onLongPress: () => _showTabOptionsDialog(index),
-                child: Tab(
-                  text: taskLists[index].categoryName,
-                ),
-              );
-            }),
-          ),
         ),
-        body: TabBarView(
-          children: List.generate(taskLists.length, (index) {
-            return ChangeNotifierProvider.value(
-              value: taskLists[index],
-              child: TaskListWidget(),
-            );
-          }),
+        body: Column(
+          children: [
+            // TabBar for switching categories
+            TabBar(
+              onTap: (index) {
+                setState(() {
+                  currentTabIndex = index;
+                });
+              },
+              tabs: List.generate(taskLists.length, (index) {
+                return GestureDetector(
+                  onLongPress: () => _showTabOptionsDialog(index), // Restore long-press functionality
+                  child: Tab(
+                    text: taskLists[index].categoryName,
+                  ),
+                );
+              }),
+            ),
+            // TextField for adding tasks
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  labelText: 'Add a task',
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: (value) {
+                  if (value.isNotEmpty) {
+                    taskLists[currentTabIndex].addTask(
+                      Task(
+                        id: counter.toString(),
+                        title: value,
+                        isDone: false,
+                      ),
+                    );
+                    counter++;
+                  }
+                },
+              ),
+            ),
+            // TabBarView for displaying tasks
+            Expanded(
+              child: TabBarView(
+                children: List.generate(taskLists.length, (index) {
+                  return ChangeNotifierProvider.value(
+                    value: taskLists[index],
+                    child: TaskListWidget(),
+                  );
+                }),
+              ),
+            ),
+          ],
         ),
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -76,6 +106,7 @@ class _ListScreenState extends State<ListScreen> {
       ),
     );
   }
+
 
   // Add New Tab (Category)
   void _addNewCategory(String categoryName) {
