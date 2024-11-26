@@ -3,7 +3,7 @@ import '../models/task.dart';
 
 class TaskProvider with ChangeNotifier {
   final List<Task> _tasks = [];
-  String categoryName = "Your List";
+  String categoryName = "";
 
   List<Task> get tasks {
     return [..._tasks];
@@ -11,6 +11,20 @@ class TaskProvider with ChangeNotifier {
 
   void addTask(Task task) {
     _tasks.add(task);
+    sortTasks();
+    notifyListeners();
+  }
+  void sortTasks() {
+    _tasks.sort((a,b){
+      if(a.isDone == b.isDone) {
+        return 0;
+      }
+      if(a.isDone){
+        return 1;
+      }else{
+        return -1;
+      }
+    });
     notifyListeners();
   }
 
@@ -21,6 +35,7 @@ class TaskProvider with ChangeNotifier {
 
   void toggleTaskCompletion(int index) {
    _tasks[index].isDone = !_tasks[index].isDone;
+   sortTasks();
    notifyListeners();
   }
   String setCategoryName(String categoryName) {
