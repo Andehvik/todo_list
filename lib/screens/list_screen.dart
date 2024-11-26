@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/task.dart';
 import '../providers/task_provider.dart';
+import '../widgets/add_category_dialog.dart';
+import '../widgets/tab_bar_widget.dart';
+import '../widgets/task_input_field.dart';
+import '../widgets/task_list_widget.dart';
 
 class ListScreen extends StatefulWidget {
   const ListScreen({super.key});
@@ -13,7 +17,6 @@ class ListScreen extends StatefulWidget {
 class _ListScreenState extends State<ListScreen> {
   final List<TaskProvider> taskLists = [];
   int currentTabIndex = 0;
-  int counter = 0;
 
   @override
   void initState() {
@@ -32,83 +35,47 @@ class _ListScreenState extends State<ListScreen> {
         ),
         body: Column(
           children: [
-            // TabBar for switching categories
-            TabBar(
-              onTap: (index) {
-                setState(() {
-                  currentTabIndex = index;
-                });
+            TabBarWidget(
+              taskLists: taskLists,
+              onTabSelected: (index) {
+                setState(() => currentTabIndex = index);
               },
-              tabs: List.generate(taskLists.length, (index) {
-                return GestureDetector(
-                  onLongPress: () => _showTabOptionsDialog(index), // Restore long-press functionality
-                  child: Tab(
-                    text: taskLists[index].categoryName,
-                  ),
-                );
-              }),
+              onTabOptionsSelected: (index) {
+                _showTabOptionsDialog(index);
+              },
             ),
-            // TextField for adding tasks
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  labelText: 'Add a task',
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: (value) {
-                  if (value.isNotEmpty) {
-                    taskLists[currentTabIndex].addTask(
-                      Task(
-                        id: counter.toString(),
-                        title: value,
-                        isDone: false,
-                      ),
-                    );
-                    counter++;
-                  }
-                },
-              ),
+            TaskInputField(
+              onTaskSubmitted: (value) {
+                if (value.isNotEmpty) {
+                  taskLists[currentTabIndex].addTask(
+                    Task(id: DateTime.now().toString(), title: value, isDone: false),
+                  );
+                }
+              },
             ),
-            // TabBarView for displaying tasks
             Expanded(
               child: TabBarView(
-                children: List.generate(taskLists.length, (index) {
+                children: taskLists.map((taskProvider) {
                   return ChangeNotifierProvider.value(
-                    value: taskLists[index],
+                    value: taskProvider,
                     child: TaskListWidget(),
                   );
-                }),
+                }).toList(),
               ),
             ),
           ],
         ),
-        floatingActionButton: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            FloatingActionButton(
-              heroTag: 'addTab',
-              onPressed: _showAddCategoryDialog,
-              child: const Icon(Icons.add_box),
-              backgroundColor: Colors.blue,
-              tooltip: 'Add New Tab',
-            ),
-            const SizedBox(height: 16),
-            FloatingActionButton(
-              heroTag: 'addTask',
-              onPressed: () => _showAddTaskDialog(context, currentTabIndex),
-              child: const Icon(Icons.add),
-              backgroundColor: Colors.green,
-              tooltip: 'Add Task to Current Tab',
-            ),
-          ],
+        floatingActionButton: FloatingActionButton(
+          heroTag: 'addCategory',
+          onPressed: () => _showAddCategoryDialog(context),
+          child: const Icon(Icons.add_box),
+          backgroundColor: Colors.blue,
+          tooltip: 'Add New Tab',
         ),
       ),
     );
   }
 
-
-  // Add New Tab (Category)
   void _addNewCategory(String categoryName) {
     setState(() {
       final newProvider = TaskProvider();
@@ -117,69 +84,15 @@ class _ListScreenState extends State<ListScreen> {
     });
   }
 
-  // Show Add Category Dialog
-  void _showAddCategoryDialog() {
-    final TextEditingController categoryController = TextEditingController();
-
+  void _showAddCategoryDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Add New Tab'),
-        content: TextField(
-          controller: categoryController,
-          decoration: const InputDecoration(hintText: 'Enter category name'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (categoryController.text.isNotEmpty) {
-                _addNewCategory(categoryController.text);
-                Navigator.of(ctx).pop();
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
+      builder: (ctx) => AddCategoryDialog(
+        onCategoryAdded: (name) => _addNewCategory(name),
       ),
     );
   }
 
-  // Show Tab Options (Edit/Delete)
-  void _showTabOptionsDialog(int tabIndex) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Manage Tab: ${taskLists[tabIndex].categoryName}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text('Edit Tab Name'),
-              onTap: () {
-                Navigator.of(ctx).pop(); // Close this dialog
-                _showEditTabDialog(tabIndex); // Show edit dialog
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete),
-              title: const Text('Delete Tab'),
-              onTap: () {
-                Navigator.of(ctx).pop(); // Close this dialog
-                _deleteTab(tabIndex);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Edit Tab Name
   void _showEditTabDialog(int tabIndex) {
     final TextEditingController categoryController =
     TextEditingController(text: taskLists[tabIndex].categoryName);
@@ -194,7 +107,7 @@ class _ListScreenState extends State<ListScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
+            onPressed: () => Navigator.of(ctx).pop(), // Cancel action
             child: const Text('Cancel'),
           ),
           TextButton(
@@ -203,7 +116,7 @@ class _ListScreenState extends State<ListScreen> {
                 setState(() {
                   taskLists[tabIndex].setCategoryName(categoryController.text);
                 });
-                Navigator.of(ctx).pop();
+                Navigator.of(ctx).pop(); // Close dialog after saving
               }
             },
             child: const Text('Save'),
@@ -213,7 +126,6 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  // Delete Tab
   void _deleteTab(int tabIndex) {
     showDialog(
       context: context,
@@ -222,15 +134,15 @@ class _ListScreenState extends State<ListScreen> {
         content: const Text('Are you sure you want to delete this tab?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
+            onPressed: () => Navigator.of(ctx).pop(), // Cancel action
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               setState(() {
-                taskLists.removeAt(tabIndex);
+                taskLists.removeAt(tabIndex); // Remove the tab
               });
-              Navigator.of(ctx).pop();
+              Navigator.of(ctx).pop(); // Close dialog after deleting
             },
             child: const Text('Delete'),
           ),
@@ -239,90 +151,38 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
-  // Add New Task
-  void _showAddTaskDialog(BuildContext context, int tabIndex) {
-    final TextEditingController taskController = TextEditingController();
 
+
+  void _showTabOptionsDialog(int tabIndex) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Add Task'),
-        content: TextField(
-          controller: taskController,
-          decoration: const InputDecoration(hintText: 'Enter task title'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (taskController.text.isNotEmpty) {
-                taskLists[tabIndex].addTask(
-                  Task(
-                    title: taskController.text,
-                    id: counter.toString(),
-                    isDone: false,
-                  ),
-                );
-                counter++;
+        title: Text('Manage Tab: ${taskLists[tabIndex].categoryName}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Tab Name'),
+              onTap: () {
                 Navigator.of(ctx).pop();
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
+                _showEditTabDialog(tabIndex);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete),
+              title: const Text('Delete Tab'),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _deleteTab(tabIndex);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-// Task List Widget
-class TaskListWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final taskProvider = Provider.of<TaskProvider>(context);
-    final tasks = taskProvider.tasks;
-
-    return ListView.builder(
-      itemCount: tasks.length,
-      itemBuilder: (ctx, index) {
-        final task = tasks[index];
-        return ListTile(
-          title: Text(task.title),
-          trailing: Checkbox(
-            value: task.isDone,
-            onChanged: (value) {
-              taskProvider.toggleTaskCompletion(index);
-            },
-          ),
-          onLongPress: () {
-            // Show deletion menu
-            showDialog(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text('Delete Task'),
-                content: const Text('Do you want to delete this task?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      taskProvider.deleteTask(task);
-                      Navigator.of(ctx).pop();
-                    },
-                    child: const Text('Delete'),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-}
+// Task List Widg
 
