@@ -18,6 +18,8 @@ class TaskTile extends StatelessWidget {
       leading: Checkbox(
         value: isDone,
         onChanged: onChanged,
+        checkColor: Colors.white,
+          activeColor: isDone ? Colors.green : null,
       ),
     );
   }

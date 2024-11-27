@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_list/providers/task_provider.dart';
 import 'package:todo_list/screens/add_task_screen.dart';
-import 'package:todo_list/screens/home_screen.dart';
+import 'package:todo_list/screens/list_screen.dart';
 
 void main() {
   runApp(MyTodoApp());
@@ -41,22 +41,20 @@ class MyApp extends StatelessWidget {
 }
 
 class MyTodoApp extends StatelessWidget {
+  const MyTodoApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => TaskProvider(),
-      child: MaterialApp(
+    return MaterialApp(
         title: 'Todo App',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
         initialRoute: '/',
         routes: {
-          '/': (ctx) => HomeScreen(),
+          '/': (ctx) => ListScreen(),
           '/add-task': (ctx) => AddTaskScreen(),
-          // Add more routes if needed
         },
-      ),
     );
   }
 }

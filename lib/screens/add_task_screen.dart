@@ -5,6 +5,11 @@ import '../providers/task_provider.dart';
 
 class AddTaskScreen extends StatelessWidget {
   final TextEditingController _taskController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
+  AddTaskScreen({super.key});
+
+
 
   void _addTask(BuildContext context) {
     final taskText = _taskController.text;
