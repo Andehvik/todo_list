@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import '../models/task.dart';
 import '../providers/task_provider.dart';
@@ -6,6 +9,7 @@ import '../widgets/add_category_dialog.dart';
 import '../widgets/tab_bar_widget.dart';
 import '../widgets/task_input_field.dart';
 import '../widgets/task_list_widget.dart';
+
 
 class ListScreen extends StatefulWidget {
   const ListScreen({super.key});
@@ -78,7 +82,7 @@ class _ListScreenState extends State<ListScreen> {
 
   void _addNewCategory(String categoryName) {
     setState(() {
-      final newProvider = TaskProvider();
+      final newProvider = TaskProvider(onTaskListChange: exportAllTabsToJson);
       newProvider.setCategoryName(categoryName);
       taskLists.add(newProvider);
     });
@@ -126,6 +130,35 @@ class _ListScreenState extends State<ListScreen> {
     );
   }
 
+  void exportAllTabsToJson() async {
+    try {
+      final List<Map<String, dynamic>> data = taskLists.map((tab) =>
+          tab.toJSON()).toList();
+      final String jsonString = jsonEncode(data);
+      await saveJsonFile(jsonString);
+    }catch (e) {
+      print("Error exporting tasks to JSON: $e");
+    }
+     // Replace with your actual export logic
+  }
+
+  /**
+   * JSON-filen ligger på enhetens data-mappe.
+   *
+   * Path: Data/user/0/no.stud.todo_list/app_flutter/tasks.json
+   */
+  Future<void> saveJsonFile(String jsonContent) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/tasks.json');
+      await file.writeAsString(jsonContent);
+      print('JSON file saved at: ${file.path}');
+    }catch (e) {
+      print("Error exporting tasks to JSON: $e");
+    }
+  }
+
+
   void _deleteTab(int tabIndex) {
     showDialog(
       context: context,
@@ -150,6 +183,8 @@ class _ListScreenState extends State<ListScreen> {
       ),
     );
   }
+
+
 
 
 

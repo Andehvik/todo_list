@@ -45,9 +45,7 @@ class MyTodoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => TaskProvider(),
-      child: MaterialApp(
+    return MaterialApp(
         title: 'Todo App',
         theme: ThemeData(
           primarySwatch: Colors.blue,
@@ -56,9 +54,7 @@ class MyTodoApp extends StatelessWidget {
         routes: {
           '/': (ctx) => ListScreen(),
           '/add-task': (ctx) => AddTaskScreen(),
-          // Add more routes if needed
         },
-      ),
     );
   }
 }

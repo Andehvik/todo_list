@@ -1,12 +1,23 @@
 import 'package:flutter/foundation.dart';
 import '../models/task.dart';
+import 'dart:convert';
 
 class TaskProvider with ChangeNotifier {
-  final List<Task> _tasks = [];
+  Function onTaskListChange;
+
+  TaskProvider({required this.onTaskListChange});
+
+  List<Task> _tasks = [];
   String categoryName = "";
 
   List<Task> get tasks {
     return [..._tasks];
+  }
+
+ void exportToJson(){
+   final List<Map<String, dynamic>> data = [toJSON()];
+   final String jsonString = jsonEncode(data);
+   print(jsonString); // Replace with your actual export logic
   }
 
   void addTask(Task task) {
@@ -26,11 +37,13 @@ class TaskProvider with ChangeNotifier {
       }
     });
     notifyListeners();
+    onTaskListChange();
   }
 
   void deleteTask(Task task) {
     _tasks.remove(task);
     notifyListeners();
+    onTaskListChange();
   }
 
   void toggleTaskCompletion(int index) {
@@ -41,17 +54,23 @@ class TaskProvider with ChangeNotifier {
   String setCategoryName(String categoryName) {
     this.categoryName = categoryName;
     notifyListeners();
+    onTaskListChange();
     return this.categoryName;
   }
   void updateTask(int index, Task updatedTask) {
     if (index >= 0 && index < _tasks.length) {
       _tasks[index] = updatedTask;
       notifyListeners();
+      onTaskListChange();
     }
   }
 
+  Map <String, dynamic> toJSON(){
+    var jsonFile = {
+      'categoryName': categoryName,
+      'tasks': tasks.map((task) => task.toJSON()).toList()
+    };
+    return jsonFile;
+  }
 
-// Implement methods to update and delete tasks
-
-// You can also add methods for fetching and managing tasks
 }
